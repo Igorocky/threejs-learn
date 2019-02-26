@@ -5,7 +5,7 @@
 <head>
     <title>Example 09.01 - Basic animations</title>
     <script type="text/javascript" src="../libs/underscore-min-1.9.1.js"></script>
-    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/three-101.js"></script>
 
     <script type="text/javascript" src="../libs/stats.js"></script>
     <script type="text/javascript" src="../libs/dat.gui.js"></script>
@@ -44,7 +44,7 @@
         // create a render and set the size
         var renderer = new THREE.WebGLRenderer();
 
-        renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+        renderer.setClearColor(0xFFFFFF, 1.0);
         renderer.setSize(window.innerWidth, window.innerHeight);
 
 
@@ -53,32 +53,18 @@
         camera.up = new THREE.Vector3(0,1,0);
         camera.lookAt(new THREE.Vector3(0,0,0));
 
-        // add subtle ambient lighting
-        var ambientLight = new THREE.AmbientLight(0x0c0c0c);
-        // scene.add(ambientLight);
-
-        // add spotlight for the shadows
-        var spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(-40, 60, -10);
-
-        // scene.add(spotLight);
-
-
 
         scene.add( createLine(0,0,10,0, 0xff0000) );
         scene.add( createLine(0,0,0,10, 0x00ff00) );
         let pol1 = createPolygon([[0,0],[3,1], [0,4]], 0xff0000);
+        pol1.name = "pol1";
         pol1.position.set(-3, -2, 0);
         scene.add(pol1);
 
         // add the output of the renderer to the html element
         document.getElementById("WebGL-output").appendChild(renderer.domElement);
-        document.addEventListener( 'keydown', onKeyDown, false );
-        // document.addEventListener( 'keyup', onKeyUp, false );
-
-        // call the render function
-        var step = 0;
-        var scalingStep = 0;
+        document.addEventListener( 'keydown', onKeyDown);
+        document.addEventListener("click", onLeftClick);
 
         var controls = new function () {
             this.rotationSpeed = 0.02;
@@ -97,10 +83,8 @@
         function render() {
             stats.update();
             delta = clock.getDelta();
-            // render using requestAnimationFrame
             renderer.render(scene, camera);
             requestAnimationFrame(render);
-
         }
 
         function initStats() {
@@ -155,6 +139,23 @@
             }
 
         };
+
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+        var planeX = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+        var intersects = new THREE.Vector3();
+        function onLeftClick(event) {
+            if ( event.button === 0 ) {
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                raycaster.setFromCamera( mouse, camera );
+                raycaster.ray.intersectPlane(planeX, intersects);
+                console.log("intersects = " + JSON.stringify(intersects));
+                pol1 = scene.getObjectByName("pol1", false);
+                pol1.position.x = intersects.x;
+                pol1.position.y = intersects.y;
+            }
+        }
 
         const KEY_CODE_DOWN = 40;
         const KEY_CODE_UP = 38;
