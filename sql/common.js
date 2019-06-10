@@ -40,11 +40,11 @@ function render({rootElemId, cameraHeight, onKeyDown, onLeftClick, initialState,
 
 }
 
-function createLine({x1,y1,x2,y2,color}) {
+function createLine({x1,y1,z1,x2,y2,z2,color}) {
     const lineMaterial = new THREE.LineBasicMaterial( { color: color} );
     const geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3( x1, y1, 0) );
-    geometry.vertices.push(new THREE.Vector3( x2, y2, 0) );
+    geometry.vertices.push(new THREE.Vector3( x1, y1, z1?z1:0) );
+    geometry.vertices.push(new THREE.Vector3( x2, y2, z2?z2:0) );
     return new THREE.Line( geometry, lineMaterial );
 }
 
@@ -56,7 +56,12 @@ function createCoordinateGrid({scene, minorStep, majorStep, minX, maxX, minY, ma
         let y2 = iy2
         let cnt = iCnt
         while (continueCondition(x1,y1)) {
-            scene.add(createLine({x1:x1,y1:y1,x2:x2,y2:y2,color:cnt % majorStep == 0?majorColor:minorColor}))
+            const isMajor = cnt % majorStep == 0
+            scene.add(createLine({
+                x1:x1,y1:y1,z1:isMajor?0:-0.01,
+                x2:x2,y2:y2,z2:isMajor?0:-0.01,
+                color:isMajor?majorColor:minorColor
+            }))
             x1+=dx
             x2+=dx
             y1+=dy
