@@ -4,6 +4,7 @@ const COLORS = {
     RED: new THREE.Color( 0xff0000 ),
     GREEN: new THREE.Color( 0x00ff00 ),
     BLUE: new THREE.Color( 0x0000ff ),
+    WHITE: new THREE.Color( 0x0000ff ),
 }
 const EX = vec3(1,0,0)
 const EZ = vec3(0,0,1)

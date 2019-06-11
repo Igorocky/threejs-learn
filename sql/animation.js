@@ -1,21 +1,33 @@
 'use strict';
 
-class LinearMovement {
+class LinearChange {
     constructor({startTime, duration, from, to}) {
         this.startTime = startTime
         this.duration = duration
         this.from = from
         this.to = to
-        this.getPositionAt = this.getPositionAt.bind(this)
+    }
+
+    getValueAt(time) {
+        if (time <= this.startTime) {
+            return this.from
+        }
+        const timeElapsedPct = (time - this.startTime)/this.duration
+        if (timeElapsedPct >= 1) {
+            return this.to
+        }
+        return this.from + (this.to - this.from)*timeElapsedPct
+    }
+}
+
+class LinearMovement {
+    constructor({startTime, duration, from, to}) {
+        this.xChange = new LinearChange({startTime:startTime, duration:duration, from:from.x, to:to.x})
+        this.yChange = new LinearChange({startTime:startTime, duration:duration, from:from.y, to:to.y})
+        this.zChange = new LinearChange({startTime:startTime, duration:duration, from:from.z, to:to.z})
     }
 
     getPositionAt(time) {
-        const timeElapsedPct = (time - this.startTime)/this.duration
-        if (timeElapsedPct > 1) {
-            return this.to
-        }
-        return this.from.clone().add(
-            vec3().subVectors(this.to,this.from).multiplyScalar(timeElapsedPct)
-        )
+        return vec3(this.xChange.getValueAt(time),this.yChange.getValueAt(time),this.zChange.getValueAt(time))
     }
 }
