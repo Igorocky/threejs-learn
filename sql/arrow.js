@@ -1,26 +1,22 @@
 'use strict';
 
-const ARROW_LINE = "ARROW_LINE"
-const ARROW_POINTER = "ARROW_POINTER"
-
 function arrowCreate({color,name,width,z,pointerLength}) {
-    const group = new THREE.Group();
-    group.name = name
     const halfWidth = width/2
     let pointerBaseHalfWidth = halfWidth*3
     pointerBaseHalfWidth = pointerBaseHalfWidth > 1 ? pointerBaseHalfWidth : 1
-    group.userData = {
+    const userData = {
         halfWidth: halfWidth,
         pointerBaseHalfWidth: pointerBaseHalfWidth,
         z:z?z:0,
         pointerLength:pointerLength
     }
-    group.add(createPolygon({
-        name: ARROW_LINE,
-        vertices: _.map(createArrowVertices(vec3(0,0), vec3(10,0), group.userData), v=>[v.x,v.y]),
+    const arrow = createPolygon({
+        name: name,
+        vertices: _.map(createArrowVertices(vec3(0,0), vec3(10,0), userData), v=>[v.x,v.y]),
         props: {color:color}
-    }))
-    return group
+    })
+    arrow.userData = userData
+    return arrow
 }
 
 function createArrowVertices(start, end, userData) {
@@ -39,10 +35,9 @@ function createArrowVertices(start, end, userData) {
 }
 
 function arrowFromTo(arrow,start,end) {
-    const line = arrow.getObjectByName(ARROW_LINE)
     const verts = createArrowVertices(start, end, arrow.userData)
     for (let i = 0; i < verts.length; i++) {
-        line.geometry.vertices[i].copy(verts[i])
+        arrow.geometry.vertices[i].copy(verts[i])
     }
-    line.geometry.verticesNeedUpdate = true
+    arrow.geometry.verticesNeedUpdate = true
 }
