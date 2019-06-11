@@ -1,5 +1,15 @@
 'use strict';
 
+const COLORS = {
+    RED: new THREE.Color( 0xff0000 ),
+    GREEN: new THREE.Color( 0x00ff00 ),
+    BLUE: new THREE.Color( 0x0000ff ),
+}
+
+function vec3(x,y,z) {
+    return new THREE.Vector3( x?x:0, y?y:0, z?z:0)
+}
+
 function render({rootElemId, cameraHeight, onKeyDown, onLeftClick, initialState, render}) {
     const clock = new THREE.Clock()
 
@@ -40,15 +50,8 @@ function render({rootElemId, cameraHeight, onKeyDown, onLeftClick, initialState,
 
 }
 
-function createLine({x1,y1,z1,x2,y2,z2,color}) {
-    const lineMaterial = new THREE.LineBasicMaterial( { color: color} );
-    const geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3( x1, y1, z1?z1:0) );
-    geometry.vertices.push(new THREE.Vector3( x2, y2, z2?z2:0) );
-    return new THREE.Line( geometry, lineMaterial );
-}
-
-function createCoordinateGrid({scene, minorStep, majorStep, minX, maxX, minY, maxY, minorColor, majorColor}) {
+function createCoordinateGrid({minorStep, majorStep, minX, maxX, minY, maxY, minorColor, majorColor}) {
+    const group = new THREE.Group();
     function drawLines({continueCondition, ix1,iy1,ix2,iy2,dx,dy,iCnt}) {
         let x1 = ix1
         let x2 = ix2
@@ -57,9 +60,9 @@ function createCoordinateGrid({scene, minorStep, majorStep, minX, maxX, minY, ma
         let cnt = iCnt
         while (continueCondition(x1,y1)) {
             const isMajor = cnt % majorStep == 0
-            scene.add(createLine({
-                x1:x1,y1:y1,z1:isMajor?0:-0.01,
-                x2:x2,y2:y2,z2:isMajor?0:-0.01,
+            group.add(createLine({
+                start:vec3(x1,y1,isMajor?0:-0.01),
+                end:vec3(x2,y2,isMajor?0:-0.01),
                 color:isMajor?majorColor:minorColor
             }))
             x1+=dx
@@ -70,10 +73,31 @@ function createCoordinateGrid({scene, minorStep, majorStep, minX, maxX, minY, ma
         }
     }
 
+    const width = 0.2
+    group.add(createPolygon({
+        vertices:[[minX,width], [maxX,width], [maxX,-width], [minX,-width]],
+        props: {color:majorColor}
+    }))
+    group.add(createPolygon({
+        vertices:[[-width,maxY], [width,maxY], [width,minY], [-width,minY]],
+        props: {color:majorColor}
+    }))
+
     drawLines({continueCondition: (x1,y1) => x1>=minX, ix1:0,iy1:minY,ix2:0,iy2:maxY,dx:-minorStep,dy:0,iCnt:0})
     drawLines({continueCondition: (x1,y1) => x1<=maxX, ix1:minorStep,iy1:minY,ix2:minorStep,iy2:maxY,dx:minorStep,dy:0,iCnt:1})
     drawLines({continueCondition: (x1,y1) => y1>=minY, ix1:minX,iy1:0,ix2:maxX,iy2:0,dx:0,dy:-minorStep,iCnt:0})
     drawLines({continueCondition: (x1,y1) => y1<=maxY, ix1:minX,iy1:minorStep,ix2:maxX,iy2:minorStep,dx:0,dy:minorStep,iCnt:1})
+
+    return group
+}
+
+function createLine({start,end,color,name}) {
+    const lineMaterial = new THREE.LineBasicMaterial( { color: color} )
+    const geometry = new THREE.Geometry()
+    geometry.vertices.push(start,end)
+    const line = new THREE.Line(geometry, lineMaterial);
+    line.name = name
+    return line
 }
 
 function createPolygon({vertices, props}) {
@@ -103,3 +127,4 @@ function getCoordsOfMousePointer(event, camera) {
     // console.log("intersects = " + JSON.stringify(intersects));
     return {x:intersects.x, y:intersects.y}
 }
+
