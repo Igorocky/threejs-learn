@@ -27,7 +27,19 @@ class LinearMovement {
         this.zChange = new LinearChange({startTime:startTime, duration:duration, from:from.z, to:to.z})
     }
 
-    getPositionAt(time) {
+    getValueAt(time) {
         return vec3(this.xChange.getValueAt(time),this.yChange.getValueAt(time),this.zChange.getValueAt(time))
+    }
+}
+
+class LinearColorChange {
+    constructor({startTime, duration, from, to}) {
+        this.rChange = new LinearChange({startTime:startTime, duration:duration, from:from.r, to:to.r})
+        this.gChange = new LinearChange({startTime:startTime, duration:duration, from:from.g, to:to.g})
+        this.bChange = new LinearChange({startTime:startTime, duration:duration, from:from.b, to:to.b})
+    }
+
+    getValueAt(time) {
+        return new THREE.Color(this.rChange.getValueAt(time),this.gChange.getValueAt(time),this.bChange.getValueAt(time))
     }
 }
