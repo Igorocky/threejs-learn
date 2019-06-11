@@ -5,6 +5,8 @@ const COLORS = {
     GREEN: new THREE.Color( 0x00ff00 ),
     BLUE: new THREE.Color( 0x0000ff ),
 }
+const EX = vec3(1,0,0)
+const EZ = vec3(0,0,1)
 
 function vec3(x,y,z) {
     return new THREE.Vector3( x?x:0, y?y:0, z?z:0)
@@ -61,8 +63,8 @@ function createCoordinateGrid({minorStep, majorStep, minX, maxX, minY, maxY, min
         while (continueCondition(x1,y1)) {
             const isMajor = cnt % majorStep == 0
             group.add(createLine({
-                start:vec3(x1,y1,isMajor?0:-0.01),
-                end:vec3(x2,y2,isMajor?0:-0.01),
+                start:vec3(x1,y1,isMajor?-0.01:-0.02),
+                end:vec3(x2,y2,isMajor?-0.01:-0.02),
                 color:isMajor?majorColor:minorColor
             }))
             x1+=dx
@@ -83,9 +85,9 @@ function createCoordinateGrid({minorStep, majorStep, minX, maxX, minY, maxY, min
         props: {color:majorColor}
     }))
 
-    drawLines({continueCondition: (x1,y1) => x1>=minX, ix1:0,iy1:minY,ix2:0,iy2:maxY,dx:-minorStep,dy:0,iCnt:0})
+    drawLines({continueCondition: (x1,y1) => x1>=minX, ix1:-minorStep,iy1:minY,ix2:-minorStep,iy2:maxY,dx:-minorStep,dy:0,iCnt:1})
     drawLines({continueCondition: (x1,y1) => x1<=maxX, ix1:minorStep,iy1:minY,ix2:minorStep,iy2:maxY,dx:minorStep,dy:0,iCnt:1})
-    drawLines({continueCondition: (x1,y1) => y1>=minY, ix1:minX,iy1:0,ix2:maxX,iy2:0,dx:0,dy:-minorStep,iCnt:0})
+    drawLines({continueCondition: (x1,y1) => y1>=minY, ix1:minX,iy1:-minorStep,ix2:maxX,iy2:-minorStep,dx:0,dy:-minorStep,iCnt:1})
     drawLines({continueCondition: (x1,y1) => y1<=maxY, ix1:minX,iy1:minorStep,ix2:maxX,iy2:minorStep,dx:0,dy:minorStep,iCnt:1})
 
     return group
@@ -100,19 +102,21 @@ function createLine({start,end,color,name}) {
     return line
 }
 
-function createPolygon({vertices, props}) {
-    let verticesSize = _.size(vertices);
-    let shape = new THREE.Shape();
+function createPolygon({vertices, props, name}) {
+    const verticesSize = _.size(vertices);
+    const shape = new THREE.Shape();
 
-    shape.moveTo.apply(shape, vertices[verticesSize-1]);
+    shape.moveTo(...vertices[0]);
     for (let i = 0; i < verticesSize; i++) {
-        shape.lineTo.apply(shape, vertices[i]);
+        shape.lineTo(...vertices[(i+1)%verticesSize]);
     }
 
     var geometry = new THREE.ShapeGeometry(shape);
     var material = new THREE.MeshBasicMaterial( { color: props.color, side: THREE.DoubleSide } );
 
-    return new THREE.Mesh( geometry, material );
+    const mesh = new THREE.Mesh( geometry, material );
+    mesh.name = name
+    return mesh;
 }
 
 const __raycaster = new THREE.Raycaster();

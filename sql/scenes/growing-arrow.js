@@ -25,7 +25,7 @@ function renderGrowingArrow(time, state, scene, camera) {
             minorColor: 0xCCCCCC, majorColor: 0x333333
         }))
 
-        scene.add(arrowCreate({color:COLORS.RED,name: ARROW1}))
+        scene.add(arrowCreate({color:COLORS.RED,name: ARROW1,width:4}))
         const startPosition = vec3(-40,30);
         const endPosition = vec3(40,30);
         arrowFromTo(scene.getObjectByName(ARROW1, false), arr1Base, startPosition)
