@@ -30,6 +30,7 @@ function arrowCreate({color,name,width,z,pointerLength}) {
 
 function arrowFromTo(arrow,start,end) {
     const vecToStart = vec3().subVectors(end,start)
+    const angle = EX.angleTo(vecToStart);
     const length = vecToStart.length()
     const halfWidth = arrow.userData.halfWidth
     const pointerBaseHalfWidth = arrow.userData.pointerBaseHalfWidth
@@ -42,14 +43,18 @@ function arrowFromTo(arrow,start,end) {
     line.geometry.vertices[1].set(lineLength,halfWidth,z)
     line.geometry.vertices[2].set(lineLength,-halfWidth,z)
     line.geometry.vertices[3].set(0,-halfWidth,z)
+    _.each(line.geometry.vertices, v=>transform(v,angle,start))
     line.geometry.verticesNeedUpdate = true
 
     const pointer = arrow.getObjectByName(ARROW_POINTER)
     pointer.geometry.vertices[0].set(length - pointerLength,pointerBaseHalfWidth,z)
     pointer.geometry.vertices[1].set(length,0,z)
     pointer.geometry.vertices[2].set(length - pointerLength,-pointerBaseHalfWidth,z)
+    _.each(pointer.geometry.vertices, v=>transform(v,angle,start))
     pointer.geometry.verticesNeedUpdate = true
+}
 
-    arrow.setRotationFromAxisAngle(EZ,EX.angleTo(vecToStart))
-    arrow.position.copy(start)
+function transform(vec,angle,start) {
+    vec.applyAxisAngle(EZ,angle)
+    vec.add(start)
 }
